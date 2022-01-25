@@ -1,9 +1,15 @@
-const express = require('express');
-const fs = require('fs');
+import express from  'express';
+import fs from 'fs';
+import http from 'http';
+import https from 'https';
+import bodyParser from 'body-parser';
+import mongoose from 'mongoose';
+
+import httpsMiddleware from './middlewares/httpsMiddleware.js';	
+
+import {privateKey, certificate, databaseUrl} from './config/config.js';
+
 const app = express();
-const httpsMiddleware = require('./middlewares/httpsMiddleware');	
-const http = require('http');
-const https = require('https');
 
 console.log('Running on ' + global.process.env.NODE_ENV + ' environment.');
 
@@ -11,16 +17,25 @@ const httpPort = global.process.env.NODE_ENV == 'development' ? 8080 : 80;
 const httpsPort = global.process.env.NODE_ENV == 'development' ? 4430 : 443;
 
 var sslOptions = {
-	key: fs.readFileSync('./private.key'),
-	cert: fs.readFileSync('./certificate.pem')
+	key: fs.readFileSync(privateKey),
+	cert: fs.readFileSync(certificate)
 };
 
-app.use(httpsMiddleware.middleware(httpsPort));
+mongoose.connect(databaseUrl);
+mongoose.connection.on('error', err => {
+	console.log(err);
+});
+
+app.use(httpsMiddleware(httpsPort));
+app.use(bodyParser);
 
 app.get('/', (_, res) => {
-	console.log('hitting route');
 	res.send('Hello World!');
 });
 
-http.createServer(app).listen(httpPort);
-https.createServer(sslOptions, app).listen(httpsPort);
+http.createServer(app).listen(httpPort, () => {
+	console.log('Http server started on port ', httpPort);
+});
+https.createServer(sslOptions, app).listen(httpsPort, () => {
+	console.log('Http server started on port ', httpsPort);
+});
