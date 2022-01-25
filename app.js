@@ -2,7 +2,6 @@ import express from  'express';
 import fs from 'fs';
 import http from 'http';
 import https from 'https';
-import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
 
 import httpsMiddleware from './middlewares/httpsMiddleware.js';	
@@ -29,7 +28,8 @@ mongoose.connect(databaseUrl)
 });
 
 app.use(httpsMiddleware(httpsPort));
-app.use(bodyParser);
+app.use(express.json());
+app.use(express.urlencoded({extended: true}));
 
 app.get('/', (_, res) => {
 	res.send('Hello World!');
@@ -39,5 +39,5 @@ http.createServer(app).listen(httpPort, () => {
 	console.log('Http server started on port ', httpPort);
 });
 https.createServer(sslOptions, app).listen(httpsPort, () => {
-	console.log('Http server started on port ', httpsPort);
+	console.log('Https server started on port ', httpsPort);
 });
