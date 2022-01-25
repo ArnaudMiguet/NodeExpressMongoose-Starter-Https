@@ -21,9 +21,11 @@ var sslOptions = {
 	cert: fs.readFileSync(certificate)
 };
 
-mongoose.connect(databaseUrl);
-mongoose.connection.on('error', err => {
-	console.log(err);
+mongoose.connect(databaseUrl)
+.then(() => {
+	console.log('Successfully connected to database');
+}).catch((err) => {
+	console.log('Connection to database failed with error: ', err);
 });
 
 app.use(httpsMiddleware(httpsPort));
