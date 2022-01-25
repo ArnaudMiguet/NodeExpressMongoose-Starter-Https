@@ -3,6 +3,7 @@ import fs from 'fs';
 import http from 'http';
 import https from 'https';
 import mongoose from 'mongoose';
+import morgan from 'morgan';
 
 import httpsMiddleware from './middlewares/httpsMiddleware.js';	
 
@@ -26,6 +27,10 @@ mongoose.connect(databaseUrl)
 }).catch((err) => {
 	console.log('Connection to database failed with error: ', err);
 });
+
+if (global.process.env.NODE_ENV == 'development') {
+	app.use(morgan('dev'));
+}
 
 app.use(httpsMiddleware(httpsPort));
 app.use(express.json());
